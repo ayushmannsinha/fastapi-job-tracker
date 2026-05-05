@@ -218,6 +218,11 @@ The match score is not created automatically when an application is created. Use
 
 This keeps the application flow realistic because match scoring is treated as an optional analysis step, not mandatory application data.
 
+## Live Demo
+
+Frontend: https://job-tracker-production-9b92.up.railway.app  
+Backend API Docs: https://fastapi-job-tracker-production.up.railway.app/docs
+
 ## Current Status
 
 The project currently supports the full local workflow:
