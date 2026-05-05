@@ -1,0 +1,31 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app import models, schemas
+from app.route.auth import get_current_user
+
+router = APIRouter(
+    prefix = "/resumes",
+    tags = ["resumes"]
+)
+
+@router.post("/", response_model = schemas.ResumeResponse)
+## what this does is it checks access the DB and gets current user and then creates a new resume for that user
+def create_resume(resume: schemas.ResumeCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    db_resume = models.Resume(
+        user_id = current_user.id,
+        resume_text = resume.resume_text,
+        resume_version = resume.resume_version
+    )
+
+    db.add(db_resume)
+    db.commit()
+    db.refresh(db_resume)
+
+    return db_resume
+
+@router.get("/", response_model = list[schemas.ResumeResponse])
+## what this does is it checks access the DB and gets current user and then returns all the resume for that user only
+def get_resumes(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    resumes = db.query(models.Resume).filter(models.Resume.user_id == current_user.id).all()
+    return resumes
