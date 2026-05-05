@@ -46,7 +46,7 @@ class Application(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
     resume_id = Column(Integer, ForeignKey("resumes.id"), nullable=False)
-    status = Column(Integer, nullable=False)
+    status = Column(String, nullable=False)
     applied_date = Column(Date)
     followup_date = Column(Date)
 
