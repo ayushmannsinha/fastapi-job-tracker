@@ -68,7 +68,7 @@ class ApplicationDetailResponse(ApplicationBase):
     company_name: str
     job_title: str
     location: Optional[str] = None
-    salary: Optional[str] = None
+    salary: Optional[int] = None
 
     resume_id: int
     resume_version: str
