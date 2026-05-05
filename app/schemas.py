@@ -109,6 +109,10 @@ class MatchScoreCreate(BaseModel):
     resume_id: int
     job_id: int
 
+class MatchScorePreviewRequest(BaseModel):
+    resume_text: str
+    job_description: str
+
 class MatchScoreResponse(BaseModel):
     score: float
     matched_skills: List[str]

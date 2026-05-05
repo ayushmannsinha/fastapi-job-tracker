@@ -33,6 +33,18 @@ def match_scores_preview(match_request: schemas.MatchScoreCreate, db: Session = 
 
     return result
 
+@router.post("/preview-text", response_model=schemas.MatchScoreResponse)
+def preview_match_score_from_raw_text(
+    match_request: schemas.MatchScorePreviewRequest,
+    current_user: models.User = Depends(get_current_user),
+):
+    result = calculate_matchScore(
+        resume_text=match_request.resume_text,
+        job_description=match_request.job_description,
+    )
+
+    return result
+
 @router.post("/applications/{application_id}", response_model=schemas.SavedMatchScoreResponse   )
 def save_match_score(application_id: int, db: Session = Depends(get_db),
                      current_user: models.User = Depends(get_current_user)):
