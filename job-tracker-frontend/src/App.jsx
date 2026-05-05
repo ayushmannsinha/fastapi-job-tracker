@@ -845,7 +845,7 @@ function MatchPreviewPage() {
     setError("");
 
     try {
-      const data = await apiRequest("/match_scores/preview", {
+      const data = await apiRequest("/match_scores/", {
         method: "POST",
         body: JSON.stringify(form),
       });
