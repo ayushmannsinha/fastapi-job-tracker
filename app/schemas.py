@@ -24,7 +24,7 @@ class JobCreate(BaseModel):
     job_title: str
     job_description: str
     location: Optional[str] = None
-    salary: Optional[str] = None
+    salary: Optional[int] = None
     date_posted: Optional[date] = None
 
 class JobResponse(JobCreate):
