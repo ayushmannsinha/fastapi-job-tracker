@@ -36,7 +36,7 @@ def create_application(application: schemas.ApplicationCreate, db: Session = Dep
         user_id = current_user.id,
         job_id = application.job_id,
         resume_id = application.resume_id,
-        status = application.status,
+        status = application.status.value,
         applied_date = application.applied_date,
         followup_date = application.followup_date
     )
@@ -143,7 +143,7 @@ def update_application(application_id: int, application_update: schemas.Applicat
     if db_application is None:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    db_application.status = application_update.status
+    db_application.status = application_update.status.value
     db_application.followup_date = application_update.followup_date
 
     db.commit()
