@@ -163,6 +163,7 @@ function Shell({ page, setPage, onLogout, children }) {
 function DashboardPage({ setPage, setSelectedApplicationId }) {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingApplicationId, setDeletingApplicationId] = useState(null);
   const [error, setError] = useState("");
 
   async function loadApplications() {
@@ -182,6 +183,31 @@ function DashboardPage({ setPage, setSelectedApplicationId }) {
   useEffect(() => {
     loadApplications();
   }, []);
+
+  async function handleDeleteApplication(applicationId) {
+    const shouldDelete = window.confirm(
+      "Delete this application? This action cannot be undone."
+    );
+
+    if (!shouldDelete) return;
+
+    setDeletingApplicationId(applicationId);
+    setError("");
+
+    try {
+      await apiRequest(`/applications/${applicationId}`, {
+        method: "DELETE",
+      });
+
+      setApplications((currentApplications) =>
+        currentApplications.filter((application) => application.id !== applicationId)
+      );
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setDeletingApplicationId(null);
+    }
+  }
 
   const total = applications.length;
   const interviews = applications.filter((app) => app.status === "Interview").length;
@@ -254,16 +280,26 @@ function DashboardPage({ setPage, setSelectedApplicationId }) {
 
             <p className="muted">Resume: {application.resume_version || "N/A"}</p>
 
-            <button
-              className="secondary-btn"
-              onClick={() => {
-                setSelectedApplicationId(application.id);
-                setPage("details");
-              }}
-              type="button"
-            >
-              View details
-            </button>
+            <div className="card-actions">
+              <button
+                className="secondary-btn"
+                onClick={() => {
+                  setSelectedApplicationId(application.id);
+                  setPage("details");
+                }}
+                type="button"
+              >
+                View details
+              </button>
+              <button
+                className="danger-btn"
+                disabled={deletingApplicationId === application.id}
+                onClick={() => handleDeleteApplication(application.id)}
+                type="button"
+              >
+                {deletingApplicationId === application.id ? "Deleting..." : "Delete"}
+              </button>
+            </div>
           </article>
         ))}
       </div>
@@ -390,6 +426,7 @@ function ResumesPage() {
     resume_version: "",
     resume_text: "",
   });
+  const [deletingResumeId, setDeletingResumeId] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -424,6 +461,33 @@ function ResumesPage() {
       await loadResumes();
     } catch (err) {
       setError(getErrorMessage(err));
+    }
+  }
+
+  async function handleDeleteResume(resumeId) {
+    const shouldDelete = window.confirm(
+      "Delete this resume? This action cannot be undone."
+    );
+
+    if (!shouldDelete) return;
+
+    setDeletingResumeId(resumeId);
+    setMessage("");
+    setError("");
+
+    try {
+      await apiRequest(`/resumes/${resumeId}`, {
+        method: "DELETE",
+      });
+
+      setResumes((currentResumes) =>
+        currentResumes.filter((resume) => resume.id !== resumeId)
+      );
+      setMessage("Resume deleted successfully.");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setDeletingResumeId(null);
     }
   }
 
@@ -479,7 +543,19 @@ function ResumesPage() {
             <div className="list">
               {resumes.map((resume) => (
                 <div className="list-item" key={resume.id}>
-                  <strong>{resume.resume_version || resume.name || `Resume ${resume.id}`}</strong>
+                  <div className="list-item-header">
+                    <strong>
+                      {resume.resume_version || resume.name || `Resume ${resume.id}`}
+                    </strong>
+                    <button
+                      className="danger-btn compact"
+                      disabled={deletingResumeId === resume.id}
+                      onClick={() => handleDeleteResume(resume.id)}
+                      type="button"
+                    >
+                      {deletingResumeId === resume.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
                   <p>{resume.resume_text || resume.content || "No resume content shown"}</p>
                 </div>
               ))}
@@ -615,11 +691,12 @@ function NewApplicationPage({ setPage, setSelectedApplicationId }) {
   );
 }
 
-function ApplicationDetailsPage({ applicationId }) {
+function ApplicationDetailsPage({ applicationId, setPage, setSelectedApplicationId }) {
   const [details, setDetails] = useState(null);
   const [savedScore, setSavedScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scoreLoading, setScoreLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState("");
   const [scoreError, setScoreError] = useState("");
   const [newStatus, setNewStatus] = useState("Applied");
@@ -708,6 +785,30 @@ function ApplicationDetailsPage({ applicationId }) {
     }
   }
 
+  async function handleDeleteApplication() {
+    const shouldDelete = window.confirm(
+      "Delete this application? This action cannot be undone."
+    );
+
+    if (!shouldDelete) return;
+
+    setDeleteLoading(true);
+    setError("");
+
+    try {
+      await apiRequest(`/applications/${applicationId}`, {
+        method: "DELETE",
+      });
+
+      setSelectedApplicationId(null);
+      setPage("dashboard");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -765,6 +866,17 @@ function ApplicationDetailsPage({ applicationId }) {
                 type="button"
               >
                 Save Status
+              </button>
+            </div>
+
+            <div className="danger-zone">
+              <button
+                className="danger-btn"
+                disabled={deleteLoading}
+                onClick={handleDeleteApplication}
+                type="button"
+              >
+                {deleteLoading ? "Deleting..." : "Delete Application"}
               </button>
             </div>
             
@@ -978,7 +1090,13 @@ export default function App() {
       />
     );
   } else if (page === "details") {
-    pageContent = <ApplicationDetailsPage applicationId={selectedApplicationId} />;
+    pageContent = (
+      <ApplicationDetailsPage
+        applicationId={selectedApplicationId}
+        setPage={setPage}
+        setSelectedApplicationId={setSelectedApplicationId}
+      />
+    );
   } else if (page === "preview") {
     pageContent = <MatchPreviewPage />;
   }

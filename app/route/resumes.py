@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from pip._internal.cli import status_codes
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
@@ -29,3 +30,22 @@ def create_resume(resume: schemas.ResumeCreate, db: Session = Depends(get_db), c
 def get_resumes(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     resumes = db.query(models.Resume).filter(models.Resume.user_id == current_user.id).all()
     return resumes
+
+@router.delete("/{resume_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_resume(resume_id: int, db:Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+
+    resume = db.query(models.Resume).filter(models.Resume.id == resume_id, models.Resume.user_id == current_user.id).first()
+
+    if resume is None:
+        raise HTTPException(status_code=404, detail="Resume not found.")
+
+    application = db.query(models.Application).filter(models.Application.resume_id == resume_id,
+                                                      models.Application.user_id == current_user.id).first()
+
+    if application is not None:
+        raise HTTPException(status_code=409, detail="Cannot delete a resume attached to an application.")
+
+    db.delete(resume)
+    db.commit()
+
+    return None

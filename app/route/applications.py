@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.params import Depends
 from sqlalchemy.orm import Session, joinedload
 
@@ -150,3 +150,16 @@ def update_application(application_id: int, application_update: schemas.Applicat
     db.refresh(db_application)
 
     return db_application
+
+@router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_application(application_id: int, db:Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+
+    application = db.query(models.Application).filter(models.Application.id == application_id, models.User.id == current_user.id).first()
+
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found.")
+
+    db.delete(application)
+    db.commit()
+
+    return None
