@@ -97,6 +97,10 @@ class ResumeBase(BaseModel):
 class ResumeCreate(ResumeBase):
     pass
 
+class ResumeUpdate(BaseModel):
+    resume_text: Optional[str] = None
+    resume_version: Optional[str] = None
+
 class ResumeResponse(ResumeBase):
     id: int
     user_id: int
