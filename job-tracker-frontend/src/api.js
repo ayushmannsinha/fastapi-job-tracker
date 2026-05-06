@@ -70,19 +70,11 @@ export async function login(email, password) {
   return data;
 }
 
-export async function register(email, password) {
-  const payload = JSON.stringify({ email, password });
+export async function register(name, email, password) {
+  const payload = JSON.stringify({ name, email, password });
 
-  try {
-    return await apiRequest("/users/", {
-      method: "POST",
-      body: payload,
-    });
-  } catch (error) {
-    // Some FastAPI routers use /users instead of /users/
-    return await apiRequest("/users", {
-      method: "POST",
-      body: payload,
-    });
-  }
+  return await apiRequest("/users/", {
+    method: "POST",
+    body: payload,
+  });
 }

@@ -29,6 +29,7 @@ function PageHeader({ title, subtitle }) {
 
 function AuthPage({ onAuthSuccess }) {
   const [mode, setMode] = useState("login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("demo@example.com");
   const [password, setPassword] = useState("demo123");
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ function AuthPage({ onAuthSuccess }) {
       if (mode === "login") {
         await login(email, password);
       } else {
-        await register(email, password);
+        await register(name, email, password);
         await login(email, password);
       }
 
@@ -84,6 +85,17 @@ function AuthPage({ onAuthSuccess }) {
         </div>
 
         <form onSubmit={handleSubmit} className="form">
+          {mode === "register" && (
+            <label>
+              Name
+              <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Your name"
+                required
+              />
+            </label>
+          )}
           <label>
             Email
             <input
