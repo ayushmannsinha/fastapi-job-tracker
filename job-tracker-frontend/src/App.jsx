@@ -453,6 +453,13 @@ function ResumesPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const [editingResumeId, setEditingResumeId] = useState(null);
+  const [savingResumeId, setSavingResumeId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    resume_version: "",
+    resume_text: "",
+  });
+
   async function loadResumes() {
     setError("");
 
@@ -514,6 +521,53 @@ function ResumesPage() {
     }
   }
 
+  function handleStartEdit(resume) {
+    setMessage("");
+    setError("");
+    setEditingResumeId(resume.id);
+    setEditForm({
+      resume_version: resume.resume_version || "",
+      resume_text: resume.resume_text || "",
+    });
+  }
+
+  function handleCancelEdit() {
+    setEditingResumeId(null);
+    setEditForm({
+      resume_version: "",
+      resume_text: "",
+    });
+  }
+
+  async function handleEditResume(resumeId) {
+    setSavingResumeId(resumeId);
+    setMessage("");
+    setError("");
+
+    try {
+      const updatedResume = await apiRequest(`/resumes/${resumeId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          resume_version: editForm.resume_version,
+          resume_text: editForm.resume_text,
+        }),
+      });
+
+      setResumes((currentResumes) =>
+        currentResumes.map((resume) =>
+          resume.id === resumeId ? updatedResume : resume
+        )
+      );
+
+      setMessage("Resume updated successfully.");
+      handleCancelEdit();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setSavingResumeId(null);
+    }
+  }
+
   return (
     <>
       <PageHeader title="Resumes" subtitle="Store resume versions used for applications." />
@@ -570,16 +624,74 @@ function ResumesPage() {
                     <strong>
                       {resume.resume_version || resume.name || `Resume ${resume.id}`}
                     </strong>
-                    <button
-                      className="danger-btn compact"
-                      disabled={deletingResumeId === resume.id}
-                      onClick={() => handleDeleteResume(resume.id)}
-                      type="button"
-                    >
-                      {deletingResumeId === resume.id ? "Deleting..." : "Delete"}
-                    </button>
+
+                    <div className="list-item-actions">
+                      {editingResumeId === resume.id ? (
+                        <button
+                          className="secondary-btn compact"
+                          onClick={handleCancelEdit}
+                          type="button"
+                        >
+                          Cancel
+                        </button>
+                      ) : (
+                        <button
+                          className="secondary-btn compact"
+                          onClick={() => handleStartEdit(resume)}
+                          type="button"
+                        >
+                          Edit
+                        </button>
+                      )}
+
+                      <button
+                        className="danger-btn compact"
+                        disabled={deletingResumeId === resume.id || editingResumeId === resume.id}
+                        onClick={() => handleDeleteResume(resume.id)}
+                        type="button"
+                      >
+                        {deletingResumeId === resume.id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
                   </div>
-                  <p>{resume.resume_text || resume.content || "No resume content shown"}</p>
+
+                  {editingResumeId === resume.id ? (
+                    <div className="inline-edit-form">
+                      <label>
+                        Version Name
+                        <input
+                          value={editForm.resume_version}
+                          onChange={(event) =>
+                            setEditForm({ ...editForm, resume_version: event.target.value })
+                          }
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        Resume Content
+                        <textarea
+                          value={editForm.resume_text}
+                          onChange={(event) =>
+                            setEditForm({ ...editForm, resume_text: event.target.value })
+                          }
+                          rows={8}
+                          required
+                        />
+                      </label>
+
+                      <button
+                        className="primary-btn"
+                        disabled={savingResumeId === resume.id}
+                        onClick={() => handleEditResume(resume.id)}
+                        type="button"
+                      >
+                        {savingResumeId === resume.id ? "Saving..." : "Save Changes"}
+                      </button>
+                    </div>
+                  ) : (
+                    <p>{resume.resume_text || resume.content || "No resume content shown"}</p>
+                  )}
                 </div>
               ))}
             </div>

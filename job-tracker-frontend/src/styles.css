@@ -424,6 +424,27 @@ select:focus {
   overflow: auto;
 }
 
+.list-item-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.secondary-btn.compact {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.inline-edit-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.inline-edit-form textarea {
+  min-height: 160px;
+}
+
 .danger-zone {
   margin-top: 18px;
   padding-top: 18px;
