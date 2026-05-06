@@ -413,7 +413,7 @@ function JobsPage() {
         </form>
 
         <section className="panel">
-          <h2>Saved Jobs</h2>
+          <h2>Available Jobs</h2>
 
           {jobs.length === 0 ? (
             <p className="muted">No jobs saved yet.</p>
