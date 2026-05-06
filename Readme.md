@@ -237,8 +237,6 @@ The project currently supports the full local workflow:
 
 ## Future Improvements
 
-- Add delete APIs for applications and resumes
-- Block resume deletion when it is already linked to applications
 - Improve frontend routing with React Router
 - Add better form validation and loading states
 - Add deployment-ready configuration for backend, frontend, and database
