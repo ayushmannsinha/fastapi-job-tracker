@@ -41,11 +41,14 @@ function AuthPage({ onAuthSuccess }) {
     setError("");
 
     try {
+
+      const normalizedEmail = email.trim().toLowerCase();
+
       if (mode === "login") {
         await login(email, password);
       } else {
         await register(name, email, password);
-        await login(email, password);
+        await login(normalizedEmail, password);
       }
 
       onAuthSuccess();

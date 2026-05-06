@@ -55,7 +55,7 @@ export async function apiRequest(path, options = {}) {
 
 export async function login(email, password) {
   const formData = new URLSearchParams();
-  formData.append("username", email);
+  formData.append("username", email.trim().toLowerCase());
   formData.append("password", password);
 
   const data = await apiRequest("/auth/token", {
@@ -71,7 +71,7 @@ export async function login(email, password) {
 }
 
 export async function register(name, email, password) {
-  const payload = JSON.stringify({ name, email, password });
+  const payload = JSON.stringify({ name: name.trim(), email: email.trim().toLowerCase(), password });
 
   return await apiRequest("/users/", {
     method: "POST",
