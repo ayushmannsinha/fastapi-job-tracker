@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { apiRequest, clearToken, getToken, login, register } from "./api";
 
 const STATUS_OPTIONS = ["Applied", "OA", "Interview", "Offer", "Rejected"];
+const USER_DISPLAY_KEY = "job_tracker_user_display";
 
 function getErrorMessage(error) {
   return error?.message || "Something went wrong";
@@ -46,9 +47,11 @@ function AuthPage({ onAuthSuccess }) {
 
       if (mode === "login") {
         await login(email, password);
+        localStorage.setItem(USER_DISPLAY_KEY, normalizedEmail);
       } else {
         await register(name, email, password);
         await login(normalizedEmail, password);
+        localStorage.setItem(USER_DISPLAY_KEY, name.trim() || normalizedEmail);
       }
 
       onAuthSuccess();
@@ -132,7 +135,7 @@ function AuthPage({ onAuthSuccess }) {
   );
 }
 
-function Shell({ page, setPage, onLogout, children }) {
+function Shell({ page, setPage, onLogout, userDisplay, children }) {
   const navItems = [
     ["dashboard", "Dashboard"],
     ["jobs", "Jobs"],
@@ -164,6 +167,11 @@ function Shell({ page, setPage, onLogout, children }) {
             </button>
           ))}
         </nav>
+
+        <div className="sidebar-user">
+          <span>Signed in as</span>
+          <strong>{userDisplay || "User"}</strong>
+        </div>
 
         <button className="logout-btn" onClick={onLogout} type="button">
           Logout
@@ -1072,16 +1080,22 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(Boolean(getToken()));
   const [page, setPage] = useState("dashboard");
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
+  const [userDisplay, setUserDisplay] = useState(localStorage.getItem(USER_DISPLAY_KEY) || "");
 
   function handleLogout() {
     clearToken();
+    localStorage.removeItem(USER_DISPLAY_KEY);
+    setUserDisplay("");
     setIsAuthenticated(false);
     setPage("dashboard");
     setSelectedApplicationId(null);
   }
 
   if (!isAuthenticated) {
-    return <AuthPage onAuthSuccess={() => setIsAuthenticated(true)} />;
+    return <AuthPage onAuthSuccess={() => {
+      setUserDisplay(localStorage.getItem(USER_DISPLAY_KEY) || "");
+      setIsAuthenticated(true);}
+    } />;
   }
 
   let pageContent;
@@ -1117,7 +1131,7 @@ export default function App() {
   }
 
   return (
-    <Shell page={page} setPage={setPage} onLogout={handleLogout}>
+    <Shell page={page} setPage={setPage} onLogout={handleLogout} userDisplay={userDisplay}>
       {pageContent}
     </Shell>
   );

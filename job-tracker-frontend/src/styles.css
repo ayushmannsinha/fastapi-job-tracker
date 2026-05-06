@@ -239,8 +239,27 @@ select:focus {
 }
 
 .logout-btn {
-  margin-top: auto;
   background: #1e293b;
+}
+
+.sidebar-user {
+  margin-top: auto;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #1e293b;
+}
+
+.sidebar-user span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.sidebar-user strong {
+  color: white;
+  font-size: 14px;
+  overflow-wrap: anywhere;
 }
 
 .content {
